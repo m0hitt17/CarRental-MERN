@@ -89,7 +89,7 @@ const Cars = () => {
           />
           <img src={assets.filter_icon} className='w-4.5 h-4.5 ml-2' alt="filter" />
         </motion.div>
-      </.div>
+      </motion.div>
       <div className='px-6 md:px-16 lg:px-24 xl:px-32 mt-10 '>
         <p className='text-gray-500 xl:px-20 max-w-7xl mx-auto ' >
           Showing {filterCars.length} Cars
