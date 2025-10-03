@@ -3,7 +3,7 @@ import Title from '../../Components/owner/Title'
 import { assets } from '../../assets/assets'
 
 import toast from 'react-hot-toast';
-import { useAppContext } from '../../context/AppCOntext';
+import { useAppContext } from '../../context/AppContext'
 
 const AddCar = () => {
   const { axios,  triggerDashboardRefresh } = useAppContext();
