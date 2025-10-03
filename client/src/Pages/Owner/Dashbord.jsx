@@ -3,7 +3,7 @@ import { assets } from '../../assets/assets'
 import Title from './../../Components/owner/Title';
 
 import toast from 'react-hot-toast';
-import { useAppContext } from '../../context/AppCOntext';
+import { useAppContext } from '../../context/AppContext'
 
 const Dashboard = () => {
   const { axios, isOwner, currency, dashboardRefresh } =  useAppContext();
