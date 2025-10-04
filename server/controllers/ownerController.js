@@ -34,7 +34,7 @@ export const changeRoleToOwner = async (req, res) => {
             user: updatedUser // Include updated user with role: "owner"
         });
     } catch (error) {
-        console.log(error.message);
+        console.log('Change role error:', error);
         res.json({ success: false, message: error.message });
     }
 };
@@ -42,11 +42,30 @@ export const changeRoleToOwner = async (req, res) => {
 export const addCar = async (req, res) => {
     try {
         const { _id } = req.user;
-        let carData = JSON.parse(req.body.carData || '{}');
+        
+        console.log('Request body:', req.body);
+        console.log('Request file:', req.file);
+        
+        // Parse carData
+        let carData;
+        try {
+            carData = JSON.parse(req.body.carData || '{}');
+        } catch (parseError) {
+            console.log('JSON parse error:', parseError);
+            return res.json({ success: false, message: 'Invalid car data format' });
+        }
+        
         const imageFile = req.file;
         
         if (!imageFile) {
             return res.json({ success: false, message: 'No image uploaded for car' });
+        }
+
+        // Validate carData fields
+        if (!carData.brand || !carData.model || !carData.year || !carData.pricePerDay || 
+            !carData.category || !carData.transmission || !carData.fuel_type || 
+            !carData.seating_capacity || !carData.location || !carData.description) {
+            return res.json({ success: false, message: 'All car fields are required' });
         }
 
         // Support both memoryStorage and diskStorage
@@ -59,11 +78,14 @@ export const addCar = async (req, res) => {
             return res.json({ success: false, message: 'Uploaded file is invalid' });
         }
 
+        console.log('Uploading to ImageKit...');
         const response = await imageKit.upload({
             file: fileBuffer,
             fileName: imageFile.originalname,
             folder: '/cars'
         });
+
+        console.log('ImageKit response:', response);
 
         let optimizedImageURL;
         if (response.filePath) {
@@ -81,21 +103,27 @@ export const addCar = async (req, res) => {
             optimizedImageURL = '';
         }
 
-        await Car.create({ ...carData, owner: _id, image: optimizedImageURL });
-        console.log('Car created successfully for owner:', _id);
+        console.log('Creating car in database...');
+        const newCar = await Car.create({ 
+            ...carData, 
+            owner: _id, 
+            image: optimizedImageURL 
+        });
+        
+        console.log('Car created successfully:', newCar);
 
         // remove temp file if any
         if (imageFile.path) {
             try { 
                 fs.unlinkSync(imageFile.path);
             } catch (e) { 
-                /* ignore */ 
+                console.log('Error deleting temp file:', e);
             }
         }
 
-        res.json({ success: true, message: "Car Added" });
+        res.json({ success: true, message: "Car Added Successfully" });
     } catch (error) {
-        console.log(error.message);
+        console.log('Add car error:', error);
         res.json({ success: false, message: error.message });
     }
 };
@@ -106,7 +134,7 @@ export const getOwnerCars = async (req, res) => {
         const cars = await Car.find({ owner: _id });
         res.json({ success: true, cars });
     } catch (error) {
-        console.log(error.message);
+        console.log('Get owner cars error:', error);
         res.json({ success: false, message: error.message });
     }
 };
@@ -129,7 +157,7 @@ export const toggleCarAvailability = async (req, res) => {
         await targetCar.save();
         res.json({ success: true, message: "Availability toggled" });
     } catch (error) {
-        console.log(error.message);
+        console.log('Toggle availability error:', error);
         res.json({ success: false, message: error.message });
     }
 };
@@ -155,7 +183,7 @@ export const deleteCar = async (req, res) => {
 
         res.json({ success: true, message: "Car removed" });
     } catch (error) {
-        console.log(error.message);
+        console.log('Delete car error:', error);
         res.json({ success: false, message: error.message });
     }
 };
@@ -163,6 +191,8 @@ export const deleteCar = async (req, res) => {
 export const getDashboardData = async (req, res) => {
     try {
         const { _id, role } = req.user;
+        
+        console.log('Getting dashboard data for user:', _id);
         
         if (role !== "owner") {
             return res.json({ success: false, message: "Unauthorized" });
@@ -201,7 +231,7 @@ export const getDashboardData = async (req, res) => {
         console.log('Dashboard data being sent:', dashboardData);
         res.json({ success: true, dashboardData });
     } catch (error) {
-        console.log('Dashboard error:', error.message);
+        console.log('Dashboard error:', error);
         res.json({ success: false, message: error.message });
     }
 };
@@ -242,7 +272,6 @@ export const updateUserImage = async (req, res) => {
                 ]
             });
         } else if (response.url) {
-            // fallback to returned url
             optimizedImageURL = response.url;
         } else {
             optimizedImageURL = '';
@@ -255,13 +284,13 @@ export const updateUserImage = async (req, res) => {
             try { 
                 fs.unlinkSync(imageFile.path);
             } catch (e) { 
-                /* ignore */ 
+                console.log('Error deleting temp file:', e);
             }
         }
 
         res.json({ success: true, message: "Image updated", image: optimizedImageURL });
     } catch (error) {
-        console.log(error.message);
+        console.log('Update image error:', error);
         res.json({ success: false, message: error.message });
     }
 };
