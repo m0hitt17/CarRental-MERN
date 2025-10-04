@@ -97,17 +97,12 @@ const Cars = () => {
         <div className='grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8 mt-4 xl:px-20 max-w-7xl mx-auto '>
           {filterCars.map((car, index) => (
             <motion.div
-<<<<<<< HEAD
               initial={{opacity:0,y:20}}
               animate={{opacity:1,y:0}}
               transition={{duration:0.4, delay:0.1*index}}
               key={index}>
-=======
-            initial={{opacity:0,y:20}}
-        animate={{opacity:1,y:0}}
-        transition={{duration:0.4,delay:0.1*index}}
-             key={index}>
->>>>>>> 9e8220f44d087822fe753087b52a7876ef3eb07f
+
+
               <CarCard car={car} />
             </motion.div>
           ))}
