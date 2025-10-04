@@ -2,7 +2,11 @@ import React, { useState } from 'react'
 import Title from '../../Components/owner/Title'
 import { assets } from '../../assets/assets'
 import toast from 'react-hot-toast';
+<<<<<<< HEAD
 import { useAppContext } from '../../context/AppContext';  // ✅ fixed import
+=======
+import { useAppContext } from '../../context/AppContext'
+>>>>>>> 9e8220f44d087822fe753087b52a7876ef3eb07f
 
 const AddCar = () => {
   const { axios, triggerDashboardRefresh } = useAppContext();
