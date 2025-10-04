@@ -1,5 +1,4 @@
 import imageKit from "../configs/imageKit.js";
-import fs from 'fs';
 import Car from './../models/car.js';
 import Booking from "../models/Booking.js";
 import User from '../models/user.js';
@@ -68,19 +67,14 @@ export const addCar = async (req, res) => {
             return res.json({ success: false, message: 'All car fields are required' });
         }
 
-        // Support both memoryStorage and diskStorage
-        let fileBuffer;
-        if (imageFile.buffer) {
-            fileBuffer = imageFile.buffer;
-        } else if (imageFile.path) {
-            fileBuffer = fs.readFileSync(imageFile.path);
-        } else {
+        // For Vercel deployment - file is always in memory buffer
+        if (!imageFile.buffer) {
             return res.json({ success: false, message: 'Uploaded file is invalid' });
         }
 
         console.log('Uploading to ImageKit...');
         const response = await imageKit.upload({
-            file: fileBuffer,
+            file: imageFile.buffer,
             fileName: imageFile.originalname,
             folder: '/cars'
         });
@@ -110,16 +104,7 @@ export const addCar = async (req, res) => {
             image: optimizedImageURL 
         });
         
-        console.log('Car created successfully:', newCar);
-
-        // remove temp file if any
-        if (imageFile.path) {
-            try { 
-                fs.unlinkSync(imageFile.path);
-            } catch (e) { 
-                console.log('Error deleting temp file:', e);
-            }
-        }
+        console.log('Car created successfully:', newCar._id);
 
         res.json({ success: true, message: "Car Added Successfully" });
     } catch (error) {
@@ -245,18 +230,13 @@ export const updateUserImage = async (req, res) => {
             return res.json({ success: false, message: 'No image uploaded' });
         }
 
-        // Support both memory and disk storage
-        let fileBuffer;
-        if (imageFile.buffer) {
-            fileBuffer = imageFile.buffer;
-        } else if (imageFile.path) {
-            fileBuffer = fs.readFileSync(imageFile.path);
-        } else {
+        // For Vercel deployment - file is always in memory buffer
+        if (!imageFile.buffer) {
             return res.json({ success: false, message: 'Uploaded file format not supported' });
         }
 
         const response = await imageKit.upload({
-            file: fileBuffer,
+            file: imageFile.buffer,
             fileName: imageFile.originalname,
             folder: '/users'
         });
@@ -278,15 +258,6 @@ export const updateUserImage = async (req, res) => {
         }
 
         await User.findByIdAndUpdate(_id, { image: optimizedImageURL });
-
-        // clean up temp file if multer used disk storage
-        if (imageFile.path) {
-            try { 
-                fs.unlinkSync(imageFile.path);
-            } catch (e) { 
-                console.log('Error deleting temp file:', e);
-            }
-        }
 
         res.json({ success: true, message: "Image updated", image: optimizedImageURL });
     } catch (error) {

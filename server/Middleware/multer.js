@@ -1,16 +1,23 @@
 import multer from "multer";
-import path from "path";
 
-// Configure storage
-const storage = multer.diskStorage({
-  destination: (req, file, cb) => {
-    cb(null, "uploads/"); // Save to "uploads" folder
-  },
-  filename: (req, file, cb) => {
-    cb(null, Date.now() + path.extname(file.originalname)); // Unique filename
-  },
+// Use memoryStorage for Vercel deployment
+// Vercel's serverless functions don't have persistent file system
+const storage = multer.memoryStorage();
+
+const upload = multer({ 
+    storage: storage,
+    limits: {
+        fileSize: 5 * 1024 * 1024 // 5MB limit
+    },
+    fileFilter: (req, file, cb) => {
+        // Accept only image files
+        const allowedTypes = ['image/jpeg', 'image/png', 'image/jpg', 'image/webp'];
+        if (allowedTypes.includes(file.mimetype)) {
+            cb(null, true);
+        } else {
+            cb(new Error('Invalid file type. Only JPEG, PNG, JPG and WEBP are allowed.'));
+        }
+    }
 });
-
-const upload = multer({ storage });
 
 export default upload;
